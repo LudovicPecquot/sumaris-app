@@ -2,6 +2,7 @@ import { TypePolicies } from '@apollo/client/core';
 import { changeCaseToUnderscore, FormFieldDefinition, MatAutocompleteFieldConfig, StatusIds } from '@sumaris-net/ngx-components';
 import {
   FractionIdGroups,
+  DepartmentGroups,
   LocationLevelGroups,
   LocationLevelIds,
   MatrixIds,
@@ -559,6 +560,12 @@ export const REFERENTIAL_CONFIG_OPTIONS = Object.freeze({
     label: 'CONFIGURATION.OPTIONS.ENUMERATION.FRACTION_GROUP_CALCIFIED_STRUCTURE_IDS',
     type: 'string',
     defaultValue: FractionIdGroups.CALCIFIED_STRUCTURE.join(','),
+  },
+  RECORDERS_DEPARTMENTS_IDS: <FormFieldDefinition>{
+    key: 'sumaris.list.departmentGroup.ids',
+    label: 'CONFIGURATION.OPTIONS.ENUMERATION.RECORDERS_DEPARTMENTS_IDS',
+    type: 'string',
+    defaultValue: DepartmentGroups.RECORDER_DEPARTMENT.join(','),
   },
   UNIT_NONE_ID: <FormFieldDefinition>{
     key: 'sumaris.enumeration.Unit.NONE.id',
