@@ -61,7 +61,6 @@ import { VesselUseFeatures, VesselUseFeaturesIsActiveEnum } from '@app/activity-
 import { ActivityMonthUtils } from '@app/activity-calendar/calendar/activity-month.utils';
 import { GearUseFeatures } from '@app/activity-calendar/model/gear-use-features.model';
 import { GearUseFeaturesTable } from '../metier/gear-use-features.table';
-import { ActivityMonth } from '@app/activity-calendar/calendar/activity-month.model';
 import { VesselFeaturesHistoryComponent } from '@app/vessel/page/vessel-features-history.component';
 import { VesselRegistrationHistoryComponent } from '@app/vessel/page/vessel-registration-history.component';
 import { FishingArea } from '@app/data/fishing-area/fishing-area.model';
@@ -71,6 +70,7 @@ import { setTimeout } from '@rx-angular/cdk/zone-less/browser';
 import { VesselSnapshotService } from '@app/referential/services/vessel-snapshot.service';
 import { VesselSnapshotFilter } from '@app/referential/services/filter/vessel.filter';
 import { VesselOwnerHistoryComponent } from '@app/vessel/page/vessel-owner-history.component';
+import { ActivityCalendarUtils } from '../activity-calendar.utils';
 
 export const ActivityCalendarPageSettingsEnum = {
   PAGE_ID: 'activityCalendar',
@@ -257,7 +257,7 @@ export class ActivityCalendarPage
           return;
         }
 
-        this.tableMetier.value = this.getMetierValue(this.calendar.value, this.tableMetier.value);
+        this.tableMetier.value = ActivityCalendarUtils.getMetierValue(this.calendar.value, this.tableMetier.value, this.timezone, this.year);
       })
     );
 
@@ -606,42 +606,12 @@ export class ActivityCalendarPage
     this.calendar.value = activityMonths;
 
     // Set metier table data
-    this.tableMetier.value = this.getMetierValue(activityMonths, data.gearUseFeatures);
+    this.tableMetier.value = ActivityCalendarUtils.getMetierValue(activityMonths, data.gearUseFeatures, this.timezone, this.year);
 
     // Load predoc
     if (this._predocPanelVisible) {
       this.loadPredoc(data);
     }
-  }
-
-  getMetierValue(activityMonths: ActivityMonth[], gearUseFeatures: GearUseFeatures[]) {
-    // Set metier table data
-    // TODO sort by startDate ?
-    const monthMetiers = removeDuplicatesFromArray(
-      activityMonths.flatMap((month) => month.gearUseFeatures.map((guf) => guf.metier)),
-      'id'
-    );
-    const firstDayOfYear = DateUtils.moment().tz(this.timezone).year(this.year).startOf('year');
-    const lastDayOfYear = firstDayOfYear.clone().endOf('year');
-
-    const metiers = monthMetiers
-      .map((metier, index) => {
-        const existingGuf = (gearUseFeatures || []).find((guf) => {
-          //TODO MFA à voir avec ifremer comment filtrer les GUF qui sont à afficher dans le tableau des métiers
-          return (
-            DateUtils.isSame(firstDayOfYear, guf.startDate, 'day') &&
-            DateUtils.isSame(lastDayOfYear, guf.endDate, 'day') &&
-            ReferentialUtils.equals(guf.metier, metier)
-          );
-        });
-        if (existingGuf) existingGuf.rankOrder = index + 1;
-        return existingGuf || { startDate: firstDayOfYear, endDate: lastDayOfYear, metier, rankOrder: index + 1 };
-      })
-      .map(GearUseFeatures.fromObject);
-
-    // DEBUG
-    console.debug(this.logPrefix + 'Loaded metiers: ', metiers);
-    return metiers;
   }
 
   async getValue(): Promise<ActivityCalendar> {
